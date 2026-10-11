@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFF6EE">
+<meta name="description" content="社交电量测试:15 题测出你的电量人格,含专属社交说明书">
+<title>社交电量测试 · 你的电量人格是?</title>
+<!--
+  ============================================================
+  《社交电量测试》v1.1 · 可爱版 · 单文件离线版 · 2026-10
+  买家使用:双击打开,或手机用浏览器打开,全程不用联网。
+  ------------------------------------------------------------
+  想改内容?只动 <script> 里的三处,样式和引擎不用碰:
+   1) SHOP_NAME  —— 填你的店铺名,会显示在结果页底部当水印;留空则不显示
+   2) QUESTIONS  —— 15 道题,每题 4 个选项(dim 三选一:pool 电量池 / recharge 回充 / leak 漏电点)
+   3) TYPES      —— 8 种人格的名称与文案
+  小猫小狗是页面里的 <symbol> 内联 SVG(搜 svg-cat / svg-dog / svg-paw),不用生图,离网也能显示。
+  ============================================================
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  background:#FFF6EE;color:#5A4A40;line-height:1.65;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* ---------- 背景:奶油色光斑 + 散落爪印 ---------- */
+.bg-glow{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.bg-1{width:420px;height:420px;left:-130px;top:-110px;background:radial-gradient(circle,rgba(255,199,166,.55),transparent 70%)}
+.bg-2{width:520px;height:520px;right:-170px;bottom:-150px;background:radial-gradient(circle,rgba(255,214,232,.55),transparent 70%)}
+.bg-3{width:380px;height:380px;right:-120px;top:-90px;background:radial-gradient(circle,rgba(216,243,228,.6),transparent 70%)}
+.bg-deco{position:fixed;z-index:0;pointer-events:none}
+#app{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom))}
+.screen{display:none}
+.screen.active{display:block;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(var(--rot,0deg))}50%{transform:translateY(-4px) rotate(var(--rot,0deg))}}
+.no-anim *,.no-anim *::before,.no-anim *::after{transition:none!important;animation:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- 通用:白卡片 ---------- */
+.card{background:#FFFFFF;border:2.5px solid #FFE5D5;border-radius:26px;box-shadow:0 16px 40px rgba(255,160,120,.14)}
+
+/* ---------- 首页 ---------- */
+#scr-intro.active{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 70px);min-height:calc(100svh - 70px)}
+.landing-card{position:relative;width:100%;padding:52px 22px 30px;text-align:center}
+.eyebrow{font-size:11px;letter-spacing:.34em;color:#FF8FAB;font-weight:800;margin-bottom:12px}
+.title{font-size:clamp(32px,8.6vw,44px);font-weight:900;letter-spacing:.04em;color:#4A3B33}
+.sub{color:#8A776B;font-size:15px;margin:14px 0 22px;line-height:2}
+.sub b{color:#E8734F}
+.feat-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.feat{font-size:12.5px;color:#7A675B;background:#FFF8F2;border:1.5px solid #FFE5D5;padding:6px 12px;border-radius:999px}
+.btn{border:none;cursor:pointer;font-family:inherit;touch-action:manipulation}
+.btn-primary{width:100%;margin-top:26px;padding:16px;border-radius:999px;font-size:17px;font-weight:800;color:#FFFFFF;background:linear-gradient(135deg,#FFB199,#FF8FAB);box-shadow:0 5px 0 #F095AD;transition:transform .12s,box-shadow .12s}
+.btn-primary:active{transform:translateY(3px);box-shadow:0 2px 0 #F095AD}
+.tiny{font-size:12px;color:#B5A79C;margin-top:14px}
+.tiny.center{text-align:center}
+/* 趴在卡片上边框的小猫小狗 */
+.peek{position:absolute;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(200,140,110,.18));animation:bob 3.2s ease-in-out infinite}
+.peek-cat{width:80px;height:73px;top:-46px;left:20px;--rot:-6deg;transform:rotate(var(--rot))}
+.peek-dog{width:76px;height:70px;top:-44px;right:18px;--rot:6deg;transform:rotate(var(--rot))}
+.peek.sm{width:58px;height:53px;top:-32px}
+.peek.sm.peek-cat{left:14px}
+.peek.sm.peek-dog{right:14px}
+
+/* ---------- 答题 ---------- */
+.quiz-top{display:flex;align-items:center;gap:12px;margin:6px 0 0 0}
+.btn-back{width:38px;height:38px;flex:0 0 auto;border-radius:50%;background:#FFFFFF;border:2px solid #FFE5D5;color:#B08D78;font-size:20px;line-height:1;cursor:pointer;font-family:inherit;touch-action:manipulation}
+.btn-back[disabled]{opacity:.25}
+.progress{flex:1;height:10px;background:#FBEEDF;border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#FFC3A0,#FF8FAB);border-radius:999px;transition:width .3s ease}
+.counter{font-size:13px;color:#A08D80;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.q-card{position:relative;margin-top:40px;padding:36px 16px 20px;min-height:52vh}
+.q-text{font-size:clamp(18px,5.2vw,22px);font-weight:800;line-height:1.6;margin:0 4px 22px;color:#4A3B33}
+.opts{display:flex;flex-direction:column;gap:11px}
+.opt{display:flex;gap:11px;align-items:center;text-align:left;width:100%;padding:14px 14px;border-radius:18px;background:#FFFDFB;border:2px solid #FFE7D8;color:#5A4A40;font-size:15.5px;line-height:1.55;cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s,transform .15s;touch-action:manipulation}
+.opt:hover{border-color:#FFC9D6}
+.opt.picked{border-color:#FF9FB6;background:#FFF3F7;transform:scale(.985)}
+.opt-tag{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:#FFF1E6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#B08D78}
+.opt.picked .opt-tag{background:#FFC9D6;color:#8A4A5B}
+.opt-tx{flex:1}
+.opt-paw{flex:0 0 auto;width:20px;height:20px;color:#E8CFC0;opacity:.35;transition:opacity .18s,transform .18s,color .18s}
+.opt.picked .opt-paw{color:#FF8FAB;opacity:1;transform:scale(1.15) rotate(-10deg)}
+#scr-quiz .tiny{text-align:center}
+.quiz-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:0 2px}
+.link-btn{background:none;border:none;font-family:inherit;font-size:13.5px;color:#A08D80;cursor:pointer;padding:8px 6px;border-radius:10px;touch-action:manipulation}
+.link-btn:hover{color:#FF8FAB}
+.link-btn[disabled]{opacity:.3;cursor:default}
+#btn-clear{color:#C4A69C}
+#btn-clear.confirming{color:#E86A5A;font-weight:800}
+
+/* ---------- 结果 ---------- */
+.result-head{text-align:center;padding:12px 0 4px}
+.head-pets{display:flex;align-items:center;justify-content:center;gap:10px}
+.pet{width:48px;height:44px;flex:0 0 auto;filter:drop-shadow(0 6px 10px rgba(200,140,110,.18));animation:bob 3.4s ease-in-out infinite}
+.pet-cat{--rot:-5deg;transform:rotate(var(--rot))}
+.pet-dog{--rot:5deg;transform:rotate(var(--rot))}
+.result-kicker{color:#A08D80;font-size:14px;letter-spacing:.12em}
+.type-emoji{font-size:64px;line-height:1.25;margin-top:8px;filter:drop-shadow(0 8px 16px rgba(255,150,110,.25))}
+.type-name{font-size:clamp(32px,9vw,42px);font-weight:900;letter-spacing:.04em;color:var(--accent,#FF8FAB)}
+.type-tagline{color:#7A675B;font-size:15px;margin-top:8px;line-height:1.8}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.chip{font-size:12.5px;padding:6px 12px;border-radius:999px;background:#FFFFFF;border:1.5px solid #FFE5D5;color:#6B584C}
+.panel{position:relative;background:#FFFFFF;border:2.5px solid #FFE7D8;border-radius:24px;padding:18px;margin-top:16px;box-shadow:0 10px 26px rgba(255,160,120,.10)}
+.panel-paw{position:absolute;top:-11px;right:14px;width:26px;height:26px;color:#FFC9D6;transform:rotate(16deg);pointer-events:none}
+.gauge-label{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#A08D80}
+.gauge-label b{font-size:20px;color:var(--accent,#FF8FAB);font-variant-numeric:tabular-nums}
+.battery{position:relative;height:44px;border:3px solid #E8D3C3;border-radius:14px;padding:5px;margin:12px 10px 0 0;background:#FFFDFB}
+.battery::after{content:"";position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:7px;height:16px;border-radius:0 4px 4px 0;background:#E8D3C3}
+.battery-fill{height:100%;width:0;border-radius:9px;background:var(--accent,#FF8FAB);transition:width 1.2s cubic-bezier(.22,.8,.24,1)}
+.bars{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+.bar-row{display:grid;grid-template-columns:76px 1fr 44px;gap:10px;align-items:center;font-size:13px;color:#8A776B}
+.bar-track{height:10px;border-radius:999px;background:#FBEDE0;overflow:hidden}
+.bar-fill{height:100%;width:0;border-radius:999px;background:var(--accent,#FF8FAB);transition:width 1s cubic-bezier(.22,.8,.24,1) .15s}
+.bar-pct{text-align:right;font-variant-numeric:tabular-nums;color:#6B584C}
+.prose p{margin-bottom:12px;font-size:15px;line-height:1.95;color:#5F4E43}
+.prose p:last-child{margin-bottom:0}
+.lists{display:grid;gap:16px}
+@media(min-width:520px){.lists{grid-template-columns:1fr 1fr}}
+.list-col h3{font-size:14px;color:#6B584C;margin-bottom:10px;letter-spacing:.04em}
+.list-col ul{list-style:none}
+.list-col li{position:relative;padding-left:24px;font-size:14px;line-height:1.8;color:#5F4E43;margin-bottom:8px}
+.list-charge li::before{content:"✓";position:absolute;left:2px;color:#4CBE7E;font-weight:800}
+.list-drain li::before{content:"✕";position:absolute;left:2px;color:#FF8F9E;font-weight:800}
+.compat p{display:flex;gap:10px;font-size:14px;line-height:1.8;color:#5F4E43;margin-bottom:8px}
+.compat p:last-child{margin-bottom:0}
+.compat b{flex:0 0 56px;color:#A08D80;font-weight:600}
+.paw-divider{display:flex;justify-content:center;gap:12px;margin-top:18px}
+.paw-divider svg{width:18px;height:18px}
+.share-row{display:flex;gap:10px;margin-top:16px}
+.btn-ghost{flex:1;padding:13px;border-radius:16px;background:#FFFFFF;border:2px solid #FFE0CC;color:#6B584C;font-size:14px;cursor:pointer;font-family:inherit;touch-action:manipulation;box-shadow:0 3px 0 #F5E0D2;transition:transform .12s,box-shadow .12s}
+.btn-ghost:active{transform:translateY(2px);box-shadow:0 1px 0 #F5E0D2}
+.others{margin-top:18px;background:#FFFDFB;border:2px solid #FFE7D8;border-radius:18px;padding:14px 16px}
+.others summary{cursor:pointer;font-size:14px;color:#6B584C;list-style:none;display:flex;align-items:center;gap:8px}
+.others summary::-webkit-details-marker{display:none}
+.others summary::after{content:"▾";color:#C9AE9E;margin-left:auto;transition:transform .2s}
+.others[open] summary::after{transform:rotate(180deg)}
+.sum-paw{width:16px;height:16px;color:#FFC9D6;flex:0 0 auto}
+.others-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.other-card{position:relative;padding:10px 12px;border-radius:14px;background:#FFF8F2;border:1.5px solid #FFE7D8;font-size:13px;cursor:pointer;transition:border-color .15s,background .15s,transform .12s}
+.other-card:hover{border-color:#FFC9D6}
+.other-card:active{transform:scale(.97)}
+.other-card::after{content:"›";position:absolute;right:10px;top:6px;color:#D9BFAF;font-weight:800;font-size:15px}
+.other-card.cur{border-color:var(--accent,#FF8FAB);background:#FFF4F9}
+.oc-me{display:inline-block;font-size:10.5px;line-height:1.6;background:#FFC9D6;color:#8A4A5B;border-radius:999px;padding:0 7px;margin-left:6px;font-weight:800;vertical-align:1px}
+.other-card .oc-name{font-weight:800;color:#4A3B33}
+.other-card .oc-tag{color:#A89A8E;font-size:11.5px;line-height:1.5;margin-top:3px}
+.shop-line{text-align:center;color:#B5A79C;font-size:12.5px;margin-top:22px;line-height:2}
+</style>
+</head>
+<body>
+<div class="bg-glow bg-1"></div>
+<div class="bg-glow bg-2"></div>
+<div class="bg-glow bg-3"></div>
+
+<!-- 散落爪印(背景装饰) -->
+<svg class="bg-deco" style="width:64px;height:64px;left:2%;top:9%;transform:rotate(-18deg);opacity:.32;color:#FFC9D6"><use href="#svg-paw"/></svg>
+<svg class="bg-deco" style="width:44px;height:44px;right:4%;top:16%;transform:rotate(22deg);opacity:.3;color:#FFD9AD"><use href="#svg-paw"/></svg>
+<svg class="bg-deco" style="width:80px;height:80px;left:-16px;bottom:22%;transform:rotate(10deg);opacity:.28;color:#FFC9D6"><use href="#svg-paw"/></svg>
+<svg class="bg-deco" style="width:56px;height:56px;right:-10px;bottom:12%;transform:rotate(-24deg);opacity:.32;color:#CDE8D4"><use href="#svg-paw"/></svg>
+<svg class="bg-deco" style="width:36px;height:36px;left:12%;bottom:6%;transform:rotate(30deg);opacity:.28;color:#FFD9AD"><use href="#svg-paw"/></svg>
+<svg class="bg-deco" style="width:40px;height:40px;right:14%;top:3%;transform:rotate(-12deg);opacity:.3;color:#FFC9D6"><use href="#svg-paw"/></svg>
+
+<!-- 手绘小猫 / 小狗 / 爪印(SVG symbol,全局复用) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="svg-paw" viewBox="0 0 40 40">
+    <ellipse cx="20" cy="26.5" rx="9.5" ry="8" fill="currentColor"/>
+    <circle cx="7.5" cy="15" r="4.3" fill="currentColor"/>
+    <circle cx="15" cy="9.5" r="4.6" fill="currentColor"/>
+    <circle cx="25" cy="9.5" r="4.6" fill="currentColor"/>
+    <circle cx="32.5" cy="15" r="4.3" fill="currentColor"/>
+  </symbol>
+  <symbol id="svg-cat" viewBox="0 0 120 110">
+    <path d="M30 36 L20 8 L52 20 Z" fill="#FFE3BE" stroke="#5C4A42" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M90 36 L100 8 L68 20 Z" fill="#FFE3BE" stroke="#5C4A42" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M31 30 L26 15 L44 21 Z" fill="#FFB7C5"/>
+    <path d="M89 30 L94 15 L76 21 Z" fill="#FFB7C5"/>
+    <circle cx="60" cy="58" r="40" fill="#FFE3BE" stroke="#5C4A42" stroke-width="3.5"/>
+    <circle cx="44" cy="54" r="4.5" fill="#5C4A42"/>
+    <circle cx="76" cy="54" r="4.5" fill="#5C4A42"/>
+    <circle cx="45.5" cy="52.5" r="1.5" fill="#FFFFFF"/>
+    <circle cx="77.5" cy="52.5" r="1.5" fill="#FFFFFF"/>
+    <circle cx="36" cy="66" r="6" fill="#FFB3C0" opacity=".55"/>
+    <circle cx="84" cy="66" r="6" fill="#FFB3C0" opacity=".55"/>
+    <path d="M56 63 Q60 60 64 63 Q62.5 67.5 60 67.5 Q57.5 67.5 56 63 Z" fill="#FF8FA3"/>
+    <path d="M60 67.5 Q60 73 53.5 72.5 M60 67.5 Q60 73 66.5 72.5" fill="none" stroke="#5C4A42" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M16 55 L33 57.5 M16 66 L32.5 64.5 M104 55 L87 57.5 M104 66 L87.5 64.5" stroke="#C9AC97" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  </symbol>
+  <symbol id="svg-dog" viewBox="0 0 120 110">
+    <ellipse cx="23" cy="50" rx="13" ry="25" transform="rotate(16 23 50)" fill="#DDA871" stroke="#5C4A42" stroke-width="3.5"/>
+    <ellipse cx="97" cy="50" rx="13" ry="25" transform="rotate(-16 97 50)" fill="#DDA871" stroke="#5C4A42" stroke-width="3.5"/>
+    <circle cx="60" cy="52" r="38" fill="#F3C894" stroke="#5C4A42" stroke-width="3.5"/>
+    <circle cx="46" cy="48" r="4.5" fill="#5C4A42"/>
+    <circle cx="74" cy="48" r="4.5" fill="#5C4A42"/>
+    <circle cx="47.5" cy="46.5" r="1.5" fill="#FFFFFF"/>
+    <circle cx="75.5" cy="46.5" r="1.5" fill="#FFFFFF"/>
+    <circle cx="34" cy="66" r="5.5" fill="#FFB3C0" opacity=".5"/>
+    <circle cx="86" cy="66" r="5.5" fill="#FFB3C0" opacity=".5"/>
+    <ellipse cx="60" cy="68" rx="19" ry="14" fill="#FFF6EA" stroke="#5C4A42" stroke-width="3"/>
+    <path d="M54 62.5 Q60 58.5 66 62.5 Q63.5 69 60 69 Q56.5 69 54 62.5 Z" fill="#5C4A42"/>
+    <circle cx="58" cy="61.5" r="1.3" fill="#FFFFFF" opacity=".8"/>
+    <path d="M60 69 Q60 74 54 74 M60 69 Q60 74 66 74" fill="none" stroke="#5C4A42" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M55.5 74.5 Q55.5 82 60 82 Q64.5 82 64.5 74.5 Z" fill="#FF9AA8" stroke="#5C4A42" stroke-width="2.2"/>
+  </symbol>
+</svg>
+
+<main id="app">
+
+  <!-- ======== 首页 ======== -->
+  <section class="screen active" id="scr-intro">
+    <div class="card landing-card">
+      <svg class="peek peek-cat"><use href="#svg-cat"/></svg>
+      <svg class="peek peek-dog"><use href="#svg-dog"/></svg>
+      <div class="eyebrow">SOCIAL BATTERY TEST</div>
+      <h1 class="title">社交电量测试</h1>
+      <p class="sub">i 人 e 人,只说了你<b>怎么充电</b>。<br>这个测试多问两件事:你的<b>电量池</b>有多大,<br>以及——你在哪里<b>漏电</b>。</p>
+      <div class="feat-row">
+        <span class="feat">🔋 8 种电量人格</span>
+        <span class="feat">📋 社交说明书</span>
+        <span class="feat">📸 可截图分享</span>
+      </div>
+      <button class="btn btn-primary" id="btn-start">开始测试 →</button>
+      <p class="tiny">15 题(每题 4 个选项)· 约 3 分钟 · 不用联网<br>趣味测试,非心理诊断;结果仅供娱乐参考</p>
+    </div>
+  </section>
+
+  <!-- ======== 答题 ======== -->
+  <section class="screen" id="scr-quiz">
+    <div class="quiz-top">
+      <button class="btn-back" id="btn-back" aria-label="上一题">‹</button>
+      <div class="progress"><div class="progress-fill" id="prog-fill"></div></div>
+      <div class="counter" id="counter">1 / 15</div>
+    </div>
+    <div class="card q-card">
+      <svg class="peek peek-cat sm"><use href="#svg-cat"/></svg>
+      <svg class="peek peek-dog sm"><use href="#svg-dog"/></svg>
+      <h2 class="q-text" id="q-text"></h2>
+      <div class="opts" id="opts"></div>
+    </div>
+    <p class="tiny">凭第一直觉选,别纠结</p>
+    <div class="quiz-foot">
+      <button class="link-btn" id="btn-prev">‹ 上一题</button>
+      <button class="link-btn" id="btn-clear">清空重来,回首页</button>
+    </div>
+  </section>
+
+  <!-- ======== 结果 ======== -->
+  <section class="screen" id="scr-result">
+    <div class="result-head">
+      <div class="head-pets">
+        <svg class="pet pet-cat"><use href="#svg-cat"/></svg>
+        <p class="result-kicker" id="r-kicker">你的电量人格是——</p>
+        <svg class="pet pet-dog"><use href="#svg-dog"/></svg>
+      </div>
+      <div class="type-emoji" id="r-emoji"></div>
+      <h2 class="type-name" id="r-name"></h2>
+      <p class="type-tagline" id="r-tagline"></p>
+      <div class="chip-row" id="r-chips"></div>
+    </div>
+
+    <div class="panel">
+      <svg class="panel-paw"><use href="#svg-paw"/></svg>
+      <div class="gauge-label"><span id="r-gauge-label">社交续航参考值</span><b id="r-hours"></b></div>
+      <div class="battery"><div class="battery-fill" id="bat-fill"></div></div>
+      <div class="bars" id="r-bars"></div>
+    </div>
+
+    <div class="panel prose">
+      <svg class="panel-paw" style="transform:rotate(-14deg)"><use href="#svg-paw"/></svg>
+      <p id="r-p1"></p>
+      <p id="r-p2"></p>
+    </div>
+
+    <div class="panel lists">
+      <svg class="panel-paw"><use href="#svg-paw"/></svg>
+      <div class="list-col">
+        <h3>🔌 请这样给我充电</h3>
+        <ul class="list-charge" id="r-charge"></ul>
+      </div>
+      <div class="list-col">
+        <h3>⚡ 别这样给我漏电</h3>
+        <ul class="list-drain" id="r-drain"></ul>
+      </div>
+    </div>
+
+    <div class="panel compat">
+      <svg class="panel-paw" style="transform:rotate(-14deg)"><use href="#svg-paw"/></svg>
+      <p><b>最合拍</b><span id="r-match"></span></p>
+      <p><b>最耗电</b><span id="r-clash"></span></p>
+    </div>
+
+    <div class="paw-divider">
+      <svg style="color:#FFC9D6"><use href="#svg-paw"/></svg>
+      <svg style="color:#FFD9AD"><use href="#svg-paw"/></svg>
+      <svg style="color:#CDE8D4"><use href="#svg-paw"/></svg>
+    </div>
+
+    <div class="share-row">
+      <button class="btn-ghost" id="btn-myresult" style="display:none">← 返回我的结果</button>
+      <button class="btn-ghost" id="btn-copy">复制我的结果文案</button>
+      <button class="btn-ghost" id="btn-again">重新测一次</button>
+    </div>
+    <p class="tiny center" id="share-hint">📸 截图发给你最想 @ 的人,让 TA 知道怎么给你充电</p>
+
+    <details class="others">
+      <summary><svg class="sum-paw"><use href="#svg-paw"/></svg>看看全部 8 种电量人格(点开可看详情)</summary>
+      <div class="others-grid" id="others-grid"></div>
+    </details>
+
+    <p class="shop-line" id="shop-line"></p>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   ★ 可自定义区(改这里就行,下面的引擎不用碰)
+   ============================================================ */
+
+// 1) 店铺名:填上会显示在结果页底部当水印(转发自带广告);留空则不显示
+const SHOP_NAME = "空无言";
+
+/* 2) 题库:15 道题,每题 4 个选项(画风不同,但同一边的两个选项投同一票)。
+   dim 含义:pool = 电量池大小 / recharge = 回充方式 / leak = 漏电点
+   每个选项的 v 是它投的票,别改字母组合 */
+const QUESTIONS = [
+  { dim:'pool', q:'连开三天的局:第一天饭局、第二天KTV、第三天出游。第三天的你:',
+    options:[
+      { t:'状态跟第一天没差,散场还想去续摊', v:'big' },
+      { t:'第三天?我第二天就已经「临时有事」了', v:'small' },
+      { t:'累是累,但越玩越来劲,电量越用越有', v:'big' },
+      { t:'人在场,魂已经回宿舍躺平了', v:'small' } ] },
+  { dim:'recharge', q:'累了一整周,最回血的周末是:',
+    options:[
+      { t:'关机一整天,谁都不见,睡到自然醒', v:'solo' },
+      { t:'把朋友约出来,吃喝聊一下午', v:'crowd' },
+      { t:'一个人逛超市、发呆、慢慢收拾屋子', v:'solo' },
+      { t:'一群人打打闹闹,回家路上都在笑', v:'crowd' } ] },
+  { dim:'leak', q:'下面哪种场合最让你想原地消失:',
+    options:[
+      { t:'一桌不太熟的人,还要硬聊一下午', v:'picky' },
+      { t:'都是好朋友,但来了二十个人,闹到半夜', v:'density' },
+      { t:'连着赶两场,刚散又被人拉去第三场', v:'density' },
+      { t:'被拉进一个谁也不认识的群,还 @ 了我', v:'picky' } ] },
+  { dim:'pool', q:'一场四小时的聚会结束,你到家第一感觉是:',
+    options:[
+      { t:'像电量被打到 3%,先瘫为敬', v:'small' },
+      { t:'刚热完身,可惜散得太早', v:'big' },
+      { t:'还能顺手把没聊完的几个人拉去吃宵夜', v:'big' },
+      { t:'沉默着洗漱完,一句话都不想多讲', v:'small' } ] },
+  { dim:'recharge', q:'心情跌到底的时候,你更需要:',
+    options:[
+      { t:'一个人的房间,和一整晚不被打扰的时间', v:'solo' },
+      { t:'有人陪着,哪怕各玩各的不说话', v:'crowd' },
+      { t:'一个电话打给最信任的人,说完就轻松了', v:'crowd' },
+      { t:'戴上耳机走很久的路,自己把自己哄好', v:'solo' } ] },
+  { dim:'leak', q:'如果只能留一个槽点,你会说:',
+    options:[
+      { t:'我不是社恐,是人一多就恐', v:'density' },
+      { t:'我不是社恐,是跟不对的人社交才恐', v:'picky' },
+      { t:'演不了一点,聊不来的人我装都装不动', v:'picky' },
+      { t:'热闹是他们的,我光是听着就累了', v:'density' } ] },
+  { dim:'pool', q:'别人对你的能量,最常见的评价是:',
+    options:[
+      { t:'「你哪来这么多精力?」', v:'big' },
+      { t:'「你刚才去哪了?」——我又去阳台透气了', v:'small' },
+      { t:'「看着挺安静,原来这么容易累」', v:'small' },
+      { t:'「怎么每次见你都这么有精神?」', v:'big' } ] },
+  { dim:'recharge', q:'假如三天没跟任何人说过一句话,你会:',
+    options:[
+      { t:'开始对着猫或对着墙说话,急需出门见人', v:'crowd' },
+      { t:'状态越来越好,甚至想把周末也沉了', v:'solo' },
+      { t:'翻通讯录找个人,哪怕约出来干坐着', v:'crowd' },
+      { t:'完全没感觉,甚至觉得再安静三天也行', v:'solo' } ] },
+  { dim:'leak', q:'你的电量掉得最快的时候是:',
+    options:[
+      { t:'饭桌上有人开了你不想接的玩笑', v:'picky' },
+      { t:'局本身挺好,但已经第五个小时了', v:'density' },
+      { t:'一场接一场,中间连喘气的缝都没有', v:'density' },
+      { t:'对方一开口,你就知道聊不到一块', v:'picky' } ] },
+  { dim:'pool', q:'你理想的社交日历是:',
+    options:[
+      { t:'一周最多两场,其余时间属于我自己', v:'small' },
+      { t:'最好每天都有点安排,空着反而发慌', v:'big' },
+      { t:'白天忙正事,晚上约个饭,天天有局最好', v:'big' },
+      { t:'一场大的之后,自动想给自己放两天假', v:'small' } ] },
+  { dim:'recharge', q:'假期第一天早上,你看到手机的第一反应是:',
+    options:[
+      { t:'消息免打扰全开,世界清净了', v:'solo' },
+      { t:'在群里挨个问:在干嘛?出来玩?', v:'crowd' },
+      { t:'先不回任何人,自己安安静静吃个早饭', v:'solo' },
+      { t:'翻聊天记录,琢磨今天约谁见面', v:'crowd' } ] },
+  { dim:'leak', q:'和喜欢的朋友待一整天,你的电量:',
+    options:[
+      { t:'该耗还是耗,按小时计价,只是耗得慢', v:'density' },
+      { t:'基本不耗,对味的人自带充电协议', v:'picky' },
+      { t:'和对的人在一起,越聊越回血', v:'picky' },
+      { t:'很开心,但到点就想回家自己待着', v:'density' } ] },
+  { dim:'pool', q:'社交结束回到家,你通常还能:',
+    options:[
+      { t:'打两把游戏、看半集剧,顺便复盘今晚谁最好笑', v:'big' },
+      { t:'鞋子一脱一秒没电,像被拔了插头', v:'small' },
+      { t:'什么也不想干,洗完就直接睡着', v:'small' },
+      { t:'意犹未尽,微信上还能再聊半小时', v:'big' } ] },
+  { dim:'recharge', q:'你觉得自己更像:',
+    options:[
+      { t:'太阳能板:出门晒晒人,很快就满电', v:'crowd' },
+      { t:'充电宝:插在自己那一格慢慢充,充好再出门', v:'solo' },
+      { t:'保温杯:自己捂着,热度能留很久', v:'solo' },
+      { t:'风铃:有人经过碰一碰,我才响得开心', v:'crowd' } ] },
+  { dim:'leak', q:'一场聚会你决定早退,最可能的原因是:',
+    options:[
+      { t:'该聊的都聊完了,剩下的人聊不到一块', v:'picky' },
+      { t:'气氛其实很好,好到我电量刚好见底', v:'density' },
+      { t:'人越聚越多,声音越来越大,我头像被按了静音', v:'density' },
+      { t:'从头到尾没有一个人,是我想深聊的', v:'picky' } ] }
+];
+
+/* 3) 8 种电量人格:key 的规律是 电量池_回充_漏电点,别改 key,
+   文案(name/tagline/p1/p2/charge/drain/match/clash)随便改;color 是该型的主色 */
+const TYPES = {
+  big_crowd_picky: {
+    name:'篝火型', emoji:'🔥', color:'#FF8A50',
+    tagline:'人越多我越旺,前提是——柴得对。',
+    p1:'你是天生的场子发动机:能暖场、能接梗、能把一屋子人的情绪都照顾到。电量池深不见底,人群不是消耗品,是你的充电器——越热闹,你越亮。',
+    p2:'但你的火挑柴。对味的人,你能从傍晚聊到天亮;不对味的人,半小时后你已经在认真研究手机壳。旁人夸你社牛,只有你自己知道:你不是谁都旺,你只是在等对的那堆柴。',
+    charge:['把对味的人凑成一桌,人不在多','有事没事就喊你,你其实有求必应','散场之后的宵夜局,那才是精华'],
+    drain:['把你丢进纯寒暄的局,还得挨个敬','席间有人抢麦,还聊不到点上','拼桌陌生人饭局,想换桌还换不了'],
+    match:'小太阳型 ☀️ —— 你烧得久,它烧得亮,凑一桌刚好',
+    clash:'含羞草型 🌿 —— 你越热情,它合得越紧'
+  },
+  big_crowd_density: {
+    name:'游乐园型', emoji:'🎡', color:'#FF6FA5',
+    tagline:'场子我来撑,但闭园时间一到,再嗨也得关灯。',
+    p1:'你是「人多反而来电」的体质:越热闹越精神,顺手把所有人的情绪都照顾了。人群就是你的充电桩,场子越大,你运转得越顺。',
+    p2:'但你不是永动机,你是一座游乐园:开放时间给得很足,也到点闭园。人潮一波接一波、场次一场接一场的时候,你会突然「啪」地拉闸——而且往往只有你自己听得见那个声音。',
+    charge:['一天就一场认真的局,质量给足','中场给你留十分钟,发个呆透口气','散场时问你一句:今天玩得开心吗'],
+    drain:['一天赶三场,场场还得靠你撑','人潮一直进,没人喊停','你刚想歇会儿,又被拉回主舞台'],
+    match:'烟花型 🎆 —— 你开园,它放焰火,一晚两个高潮',
+    clash:'猫型 🐱 —— 你把人都喊来了,它已经上了树'
+  },
+  big_solo_picky: {
+    name:'深海型', emoji:'🌊', color:'#45AEE5',
+    tagline:'我有一整片海的电量,但要浮上来一个人换气。',
+    p1:'你的电量池大得惊人:能扛事、能陪聊、能在人群里体面地待很久很久。但你的充电桩装在海面以下——人散了,一个人待着,你才真正开始回蓝。',
+    p2:'而且你极度挑水质:对的人面前,你能一口气潜到深夜;不对的人面前,你连水面都懒得露。别人以为你难约,其实你只是在保护自己那片轻易不对外开放的海。',
+    charge:['约你时,选人少的局','聊点真的,别只寒暄','给你留独处的夜晚,你自己会满电回来'],
+    drain:['连轴转的局,中间没有换气口','人不对,还要假装投缘','你安静一会儿,就被盘问「是不是不开心」'],
+    match:'猫型 🐱 —— 它守地盘,你潜深海,互不打扰地同在',
+    clash:'小太阳型 ☀️ —— 你想潜水,它一直给你发消息'
+  },
+  big_solo_density: {
+    name:'蓄电池型', emoji:'🔋', color:'#8C9EFF',
+    tagline:'容量很大,但充电桩只装在自己家。',
+    p1:'你是那种「看着不声张,其实很能扛」的人:一场长局下来,别人都蔫了,你还稳着。电量池容量大、放电也稳,是朋友圈里的定海神针。',
+    p2:'但你的充电方式很专一:必须独处、必须安静、必须插回自己家那只插座。连着几天排满社交,你会肉眼可见地一格一格掉电——不是不开心,是供电局需要检修。',
+    charge:['提前约,别搞突然袭击','一场结束,允许你「消失」一整天','正经局比连环局更合你'],
+    drain:['行程表连着三五天排满','白天耗完,晚上还要续摊','你刚到家,又有人问你出不出来'],
+    match:'含羞草型 🌿 —— 它替你挡人,你陪它充电,黄金搭档',
+    clash:'烟花型 🎆 —— 它要放,你要省,节奏永远错一拍'
+  },
+  small_crowd_picky: {
+    name:'烟花型', emoji:'🎆', color:'#D9A410',
+    tagline:'电量不多,所以只肯为对的人点燃。',
+    p1:'你电量不大,但燃点极美:对的人一凑齐,你能「嘭」地炸出一整片夜空,又亮又真诚。人群对你不是负担,是引线——前提是,这根引线得对。',
+    p2:'你的电量按「值得」分配:值得的局,你倾尽所有;不值得的局,你连火星都懒得给。所以别怪你挑——烟花,本来就只为值得的人开放。',
+    charge:['给你留好位置:人不多,但都是自己人','让你当一次主角,听你把话讲完','散场后跟你顺路走一段,那是彩蛋'],
+    drain:['人凑不齐,还要硬放的场','全程假笑,一句真心话都没有','你刚点燃,就被泼了冷水'],
+    match:'游乐园型 🎡 —— 它搭台,你绽放,谁也不用装',
+    clash:'蓄电池型 🔋 —— 它要稳,你要闪,信号总对不上'
+  },
+  small_crowd_density: {
+    name:'小太阳型', emoji:'☀️', color:'#FF7B7B',
+    tagline:'走到哪暖到哪,但太阳也要下山。',
+    p1:'你自带温度:话不一定最多,但谁冷了你会递热水,谁尴尬了你会接一句。人群是你的燃料,和你待过的人,都会觉得今天还不错。',
+    p2:'但你是限量版的小太阳:热量就那么多,人一多、时间一长,你会先把自己暖没。你总说「我没事」,其实你只是习惯了先照亮大家,再自己摸黑下山。',
+    charge:['小范围、熟面孔,晒太阳也要看人数','多夸夸你,你真的会重新上电','关心你的时候,别要求你「必须开心」'],
+    drain:['人多到你要挨个照顾情绪','全场只有你在活跃气氛','你刚坐下,又被喊去张罗'],
+    match:'篝火型 🔥 —— 它给场子,你给温度,互相不掏空',
+    clash:'深海型 🌊 —— 你想贴贴,它想潜水'
+  },
+  small_solo_picky: {
+    name:'猫型', emoji:'🐱', color:'#C77BEA',
+    tagline:'不是高冷,是电量只够给对的人看。',
+    p1:'你电量不大,姿态很挑:不对味的人面前,你是一尊雕塑;对味的人面前,你能黏到对方怀疑人生。你不是不爱社交,你只是要精准社交。',
+    p2:'独处对你不是逃离,是回血舱:安安静静待一会儿,你又是那个眼睛亮亮的人。你的原则很简单——宁可不聚,也不将就;宁肯在家,也不出席没意义的局。',
+    charge:['对味的人,单独约,别拉群','给你留退路:随时能走的局最舒服','用投喂表达爱:好吃的、好听的,都行'],
+    drain:['话不投机,还要硬坐两小时','被当众点名表演才艺','临时改计划,还改得猝不及防'],
+    match:'深海型 🌊 —— 它潜得深,你蹲得稳,安静界顶配',
+    clash:'游乐园型 🎡 —— 它要热闹,你要退场,每局都像拉锯'
+  },
+  small_solo_density: {
+    name:'含羞草型', emoji:'🌿', color:'#4CBE7E',
+    tagline:'轻碰会张开,碰多了就合上——不是冷,是需要缓冲。',
+    p1:'你电量不大,心思很细:人少的时候你其实很聊得开,甚至能贡献一整场的笑点。你的世界安排得很安静,一切都刚刚好。',
+    p2:'但你的敏感是数量级的:哪怕全是好朋友,人一多,你的叶子也会慢慢合上。那不代表你有情绪,只是提醒你:该退回去充会儿电了,充好,会再张开。',
+    charge:['人少的局,一对一最好','被理解的时候,不用解释,那对你意义重大','给你慢慢来的时间,你不抢跑,也不掉队'],
+    drain:['连续社交,一场接一场','突然被拉进大合照和嘈杂饭桌','大家都很好,但人真的太多了'],
+    match:'蓄电池型 🔋 —— 它挡人,你充电,安静界的黄金搭档',
+    clash:'篝火型 🔥 —— 它烧得正旺,你只想钻回土里'
+  }
+};
+
+/* 续航参考值:按「电量池」票数 0~5 映射 */
+const HOURS = ['不到 1 小时','约 1 小时','约 2 小时','约 3–4 小时','约 4–5 小时','6 小时以上'];
+
+/* ============================================================
+   引擎(不用改)
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const scrIntro = $('scr-intro'), scrQuiz = $('scr-quiz'), scrResult = $('scr-result');
+let qi = 0;
+let lastCode = null;
+let myCode = null, myStats = null;
+const answers = new Array(QUESTIONS.length).fill(null);
+let lock = false;
+
+function showScreen(el){
+  [scrIntro, scrQuiz, scrResult].forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function renderQ(){
+  const q = QUESTIONS[qi];
+  $('q-text').textContent = q.q;
+  $('counter').textContent = (qi + 1) + ' / ' + QUESTIONS.length;
+  $('prog-fill').style.width = (qi / QUESTIONS.length * 100) + '%';
+  $('btn-back').disabled = (qi === 0);
+  $('btn-prev').disabled = (qi === 0);
+  const box = $('opts');
+  box.textContent = '';
+  q.options.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt' + (answers[qi] === i ? ' picked' : '');
+    btn.innerHTML = '<span class="opt-tag"></span><span class="opt-tx"></span><svg class="opt-paw" aria-hidden="true"><use href="#svg-paw"/></svg>';
+    btn.querySelector('.opt-tag').textContent = 'ABCD'[i];
+    btn.querySelector('.opt-tx').textContent = o.t;
+    btn.onclick = () => pick(i);
+    box.appendChild(btn);
+  });
+}
+
+function pick(i){
+  if (lock) return;
+  lock = true;
+  answers[qi] = i;
+  renderQ();
+  setTimeout(() => {
+    qi++;
+    if (qi < QUESTIONS.length) {
+      renderQ();
+      setTimeout(() => { lock = false; }, 320);  // 新题出现后再缓冲,防止连点误答下一题
+    } else {
+      lock = false;
+      tally();
+      showScreen(scrResult);
+    }
+  }, 260);
+}
+
+function goBack(){
+  if (lock || qi === 0) return;
+  qi--;
+  renderQ();
+}
+
+function tally(){
+  const byDim = { pool:[], recharge:[], leak:[] };
+  QUESTIONS.forEach((q, i) => {
+    const sel = answers[i];
+    byDim[q.dim].push(sel == null ? '?' : q.options[sel].v);
+  });
+  const big   = byDim.pool.filter(v => v === 'big').length;
+  const crowd = byDim.recharge.filter(v => v === 'crowd').length;
+  const picky = byDim.leak.filter(v => v === 'picky').length;
+  const code = (big >= 3 ? 'big' : 'small') + '_' +
+               (crowd >= 3 ? 'crowd' : 'solo') + '_' +
+               (picky >= 3 ? 'picky' : 'density');
+  myCode = code;
+  myStats = { big, crowd, picky };
+  renderResult(code, myStats);
+}
+
+function renderResult(code, s, isView){
+  lastCode = code;
+  const t = TYPES[code];
+  scrResult.style.setProperty('--accent', t.color);
+  $('r-kicker').textContent = isView ? '你正在查看——' : '你的电量人格是——';
+  $('r-gauge-label').textContent = isView ? '该类型的续航参考值' : '社交续航参考值';
+  $('btn-myresult').style.display = isView ? '' : 'none';
+  $('btn-copy').style.display = isView ? 'none' : '';
+  $('share-hint').style.display = isView ? 'none' : '';
+  $('r-emoji').textContent = t.emoji;
+  $('r-name').textContent = t.name;
+  $('r-tagline').textContent = t.tagline;
+
+  const chips = [
+    s.big >= 3 ? '电量池 · 偏大' : '电量池 · 偏小',
+    s.crowd >= 3 ? '充电方式 · 人群' : '充电方式 · 独处',
+    s.picky >= 3 ? '漏电点 · 人不对' : '漏电点 · 量太大'
+  ];
+  const chipBox = $('r-chips');
+  chipBox.textContent = '';
+  chips.forEach(c => {
+    const el = document.createElement('span');
+    el.className = 'chip';
+    el.textContent = c;
+    chipBox.appendChild(el);
+  });
+
+  $('r-hours').textContent = HOURS[s.big];
+
+  const barsBox = $('r-bars');
+  barsBox.textContent = '';
+  const bars = [
+    ['回充方式', Math.max(s.crowd, 5 - s.crowd) * 20],
+    ['漏电倾向', Math.max(s.picky, 5 - s.picky) * 20]
+  ];
+  bars.forEach(pair => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const lb = document.createElement('span');
+    lb.textContent = pair[0];
+    const track = document.createElement('div');
+    track.className = 'bar-track';
+    const fill = document.createElement('div');
+    fill.className = 'bar-fill';
+    fill.dataset.w = pair[1];
+    track.appendChild(fill);
+    const num = document.createElement('span');
+    num.className = 'bar-pct';
+    num.textContent = pair[1] + '%';
+    row.appendChild(lb); row.appendChild(track); row.appendChild(num);
+    barsBox.appendChild(row);
+  });
+
+  $('r-p1').textContent = t.p1;
+  $('r-p2').textContent = t.p2;
+
+  const fillList = (id, arr) => {
+    const ul = $(id);
+    ul.textContent = '';
+    arr.forEach(x => {
+      const li = document.createElement('li');
+      li.textContent = x;
+      ul.appendChild(li);
+    });
+  };
+  fillList('r-charge', t.charge);
+  fillList('r-drain', t.drain);
+
+  $('r-match').textContent = t.match;
+  $('r-clash').textContent = t.clash;
+
+  const grid = $('others-grid');
+  grid.textContent = '';
+  Object.keys(TYPES).forEach(k => {
+    const ty = TYPES[k];
+    const card = document.createElement('div');
+    card.className = 'other-card' + (k === code ? ' cur' : '');
+    const n = document.createElement('div');
+    n.className = 'oc-name';
+    n.textContent = ty.emoji + ' ' + ty.name;
+    if (k === myCode) {
+      const me = document.createElement('span');
+      me.className = 'oc-me';
+      me.textContent = '我';
+      n.appendChild(me);
+    }
+    const g = document.createElement('div');
+    g.className = 'oc-tag';
+    g.textContent = ty.tagline;
+    card.appendChild(n); card.appendChild(g);
+    card.onclick = () => showType(k);
+    grid.appendChild(card);
+  });
+
+  const shop = $('shop-line');
+  if (SHOP_NAME) {
+    shop.textContent = '本测试由「' + SHOP_NAME + '」出品 · 欢迎转发给朋友';
+  } else {
+    shop.style.display = 'none';
+  }
+
+  const batW = 22 + s.big * 15.6;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $('bat-fill').style.width = batW + '%';
+    document.querySelectorAll('#r-bars .bar-fill').forEach(f => {
+      f.style.width = f.dataset.w + '%';
+    });
+  }));
+}
+
+/* 图鉴:点开某个类型看详情(用代表值展示),可返回自己的结果 */
+function representativeStats(code){
+  const p = code.split('_');
+  return { big: p[0] === 'big' ? 4 : 1, crowd: p[1] === 'crowd' ? 4 : 1, picky: p[2] === 'picky' ? 4 : 1 };
+}
+
+function showType(k){
+  if (k === myCode && myStats) { renderResult(myCode, myStats, false); }
+  else { renderResult(k, representativeStats(k), true); }
+  window.scrollTo(0, 0);
+}
+
+/* 复制结果文案(带兜底) */
+function copyResult(){
+  const t = TYPES[lastCode];
+  const text = '我的社交电量人格是「' + t.name + '」' + t.emoji + '\n' + t.tagline + '\n—— 来自《社交电量测试》';
+  const btn = $('btn-copy');
+  const done = () => {
+    btn.textContent = '已复制,去粘贴 ✓';
+    setTimeout(() => { btn.textContent = '复制我的结果文案'; }, 1400);
+  };
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* 按钮绑定 */
+$('btn-start').onclick = () => {
+  qi = 0;
+  answers.fill(null);
+  renderQ();
+  showScreen(scrQuiz);
+};
+$('btn-back').onclick = goBack;
+$('btn-prev').onclick = goBack;
+let clearTimer = null;
+$('btn-clear').onclick = () => {
+  const b = $('btn-clear');
+  if (lock) return;
+  if (b.classList.contains('confirming')) {
+    clearTimeout(clearTimer);
+    b.classList.remove('confirming');
+    b.textContent = '清空重来,回首页';
+    qi = 0;
+    answers.fill(null);
+    showScreen(scrIntro);
+  } else {
+    b.classList.add('confirming');
+    b.textContent = '再点一次确认清空';
+    clearTimer = setTimeout(() => {
+      b.classList.remove('confirming');
+      b.textContent = '清空重来,回首页';
+    }, 2600);
+  }
+};
+$('btn-copy').onclick = copyResult;
+$('btn-myresult').onclick = () => {
+  if (myCode && myStats) { renderResult(myCode, myStats, false); window.scrollTo(0, 0); }
+};
+$('btn-again').onclick = () => {
+  qi = 0;
+  answers.fill(null);
+  renderQ();
+  showScreen(scrQuiz);
+};
+
+/* ============================================================
+   开发自查钩子(买家无感,不影响正常使用)
+   ?dev=q&i=2          直接看第 3 题
+   ?dev=result&t=key   直接看某型结果(&weak=1 出 4/5 票形态)
+   ============================================================ */
+(function(){
+  const params = new URLSearchParams(location.search);
+  const dev = params.get('dev');
+  if (!dev) return;
+  document.documentElement.classList.add('no-anim');
+  if (params.get('diag')) {
+    const badge = document.createElement('div');
+    badge.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:99;background:#000d;color:#3f6;font:12px monospace;padding:2px 6px;border-radius:6px';
+    badge.textContent = window.innerWidth + 'x' + window.innerHeight + ' dpr' + window.devicePixelRatio;
+    document.body.appendChild(badge);
+  }
+  if (dev === 'q') {
+    let i = parseInt(params.get('i') || '0', 10);
+    if (isNaN(i) || i < 0) i = 0;
+    if (i > QUESTIONS.length - 1) i = QUESTIONS.length - 1;
+    for (let k = 0; k < i; k++) answers[k] = k % 2;
+    qi = i;
+    renderQ();
+    showScreen(scrQuiz);
+  } else if (dev === 'result') {
+    const code = params.get('t') || 'big_crowd_picky';
+    const parts = code.split('_');
+    const want = { pool: parts[0], recharge: parts[1], leak: parts[2] };
+    QUESTIONS.forEach((q, i) => {
+      answers[i] = q.options.findIndex(o => o.v === want[q.dim]);
+    });
+    if (params.get('weak')) {
+      ['pool','recharge','leak'].forEach(d => {
+        const i = QUESTIONS.findIndex(q => q.dim === d);
+        if (i > -1) answers[i] = QUESTIONS[i].options.findIndex(o => o.v !== want[d]);
+      });
+    }
+    tally();
+    showScreen(scrResult);
+  }
+})();
+</script>
+</body>
+</html>
